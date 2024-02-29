@@ -52,7 +52,25 @@ for itr = 1:10
         squeeze(simOut(itr).veh_vel.data)  ...
         squeeze(simOut(itr).susp_y.data)  ...
         squeeze(simOut(itr).susp_vel.data)], ...
-        [squeeze(simOut(itr).Road_y.data) squeeze(simOut(itr).Road_vel.data)],'Ts',0.1,'SamplingInstants',simOut(itr).tout);
-
+        [squeeze(simOut(itr).Road_y.data) squeeze(simOut(itr).Road_vel.data)],'Ts',0.1,'SamplingInstants',simOut(itr).tout); %#ok<*SAGROW> 
+        % Set time units to seconds
+    responseData{itr}.TimeUnit = 's';
+        % Set names of input channels
+    responseData{itr}.InputName = {'RoadDisp','RoadVel'};
+        % Set units for input variables
+    responseData{itr}.InputUnit = {'m','m/s'};
+        % Set name of output channels
+    responseData{itr}.OutputName = {'VehDisp','VehVel','SuspDisp','SuspVel'};
+        % Set unit of output channels
+    responseData{itr}.OutputUnit = {'m','m/s','m','m/s'};
 end
+
+est_data = merge(responseData{1},responseData{2},responseData{3},responseData{4},responseData{5},responseData{6},responseData{7});
+val_data = merge(responseData{8},responseData{9},responseData{10});
+est_data_sim = est_data(:,[1 3],1);
+val_data_sim = val_data(:,[1 3],1);
+
+mp = impulseest(est_data);
+step(mp)
+
 

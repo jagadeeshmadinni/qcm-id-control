@@ -1,4 +1,4 @@
-clear vars;
+clear all;
 close all;
 
 
@@ -30,7 +30,7 @@ parfor i = 1:10
     in(i) = setBlockParameter(in(i),'quarterCarModel/b1','D',num2str(b1));
     in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m2));
     in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k2));
-    in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.1');
+    in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.01');
     inFileName = sprintf("system_parameters_itr_%d.mat",i)
     fullInFileName = fullfile('C:\Users\jmadinn\Documents\Parameter Identfication',inFileName);
     inMatFile = matfile(fullInFileName,'writable',true);
@@ -43,33 +43,26 @@ parfor i = 1:10
 end 
 
 simOut = parsim(in, 'ShowSimulationManager', 'off');
+
+%Create iddata objects from the simulation output objects to load into the
+%System Identification Toolbox
 for itr = 1:10
     
-    responseData(itr) = iddata([squeeze(simOut(itr).veh_y.data),],[squeeze(simOut(itr).Road_y.data),squeeze(simOut(itr).Road_vel.data)])
+    responseData{itr} = iddata([squeeze(simOut(itr).veh_y.data)  ...
+        squeeze(simOut(itr).veh_vel.data)  ...
+        squeeze(simOut(itr).susp_y.data)  ...
+        squeeze(simOut(itr).susp_vel.data)], ...
+        [squeeze(simOut(itr).Road_y.data) squeeze(simOut(itr).Road_vel.data)],'Ts',0.1,'SamplingInstants',simOut(itr).tout);
+        % Set time units to seconds
+        responseData{itr}.TimeUnit = 's';
+        % Set names of input channels
+        ze.InputName = {'RoadDisplacement','RoadVelocity'};
+        % Set units for input variables
+        ze.InputUnit = {'kg/min','A'};
+        % Set name of output channel
+        ze.OutputName = 'Production';
+        % Set unit of output channel
+        ze.OutputUnit = 'mg/min';
 
 end
-
-% for itr = 1:10
-% 
-%     xr_dot = squeeze(simOut(itr).Road_vel.data);
-%     xr = squeeze(simOut(itr).Road_y.data);
-%     x2 = squeeze(simOut(itr).susp_y.data);
-%     x2_dot = squeeze(simOut(itr).susp_vel.data);
-%     x1_dot = squeeze(simOut(itr).veh_vel.data);
-%     x1 = squeeze(simOut(itr).veh_y.data);
-%     t = simOut(itr).tout;
-%     
-%     outFileName = sprintf("system_response_%d.mat",itr);
-%     fullOutFileName = fullfile('C:\Users\jmadinn\Documents\Parameter Identfication',outFileName);
-%     outMatFile = matfile(fullOutFileName,'writable',true);
-%     outMatFile.x1 = x1;
-%     outMatFile.x1_dot = x1_dot;
-%     outMatFile.x2 = x2;
-%     outMatFile.x2_dot = x2_dot;
-%     outMatFile.xr = xr;
-%     outMatFile.xr_dot = xr_dot;
-%     outMatFile.t = t;
-% 
-% end
-
 
