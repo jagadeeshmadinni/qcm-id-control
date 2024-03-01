@@ -2,21 +2,24 @@ clear all;
 close all;
 
 
-%Nominal values of the Quarter Car Suspension model from 
+% Nominal values of the Quarter Car Suspension model from
 % https://ctms.engin.umich.edu/CTMS/index.php?example=Suspension&section=SimulinkModeling
 % ignoring the damping effect of the tire
-%(m1) body mass 2500 kg
-%(m2) suspension mass 320 kg
-%(k1) spring constant of suspension system 80,000 N/m
-%(k2) spring constant of wheel and tire 500,000 N/m
-%(b1) damping constant of suspension system 10000 N.s/m
+% (m1) body mass 2500 kg (m2) suspension mass 320 kg (k1) spring constant of
+% suspension system 80,000 N/m (k2) spring constant of wheel and tire
+% 500,000 N/m (b1) damping constant of suspension system 10000 N.s/m
+% 
+% According to NHTSA recommendation, speed bumps may not be more than 3
+% inches high. The input profile for the QCM model shall be a series of
+% bumps represented by a sine wave with an amplitude of 75 mm and separated
+% by a distance of 150 mm
 
-%According to NHTSA recommendation, speed bumps may not be more than 3
-%inches high. The input profile for the QCM model shall be a series of
-%bumps represented by a sine wave with an amplitude of 75 mm and separated by a
-%distance of 150 mm
 
-parfor i = 1:10
+% Let's do 10 runs to begin with
+
+numRuns = 10;
+
+parfor i = 1:numRuns
 
     s = rng(i);
     m1 = (1 + randi(10)/100)*2500;
@@ -39,6 +42,16 @@ parfor i = 1:10
     inMatFile.k1 = k1;
     inMatFile.b1 = b1;
     inMatFile.k2 = k2;
+
+    A = [0, 1, 0, 0;
+        -k1/m1,-b1/m1,k1/m1,b1/m1;
+        0, 0, 0, 1;
+        k1/m2, b1/m2, -(k1+k2)/m2, -b1/m2];
+    B = [0;0;0;k2/m2];
+    C = [-k1/m1,-b1/m1,k1/m1,b1/m1;
+        k1/m2, b1/m2, -(k1+k2)/m2, -b1/m2];
+    D = [0;0];
+
 
 end 
 
@@ -65,12 +78,33 @@ for itr = 1:10
     responseData{itr}.OutputUnit = {'m','m/s','m','m/s'};
 end
 
-est_data = merge(responseData{1},responseData{2},responseData{3},responseData{4},responseData{5},responseData{6},responseData{7});
-val_data = merge(responseData{8},responseData{9},responseData{10});
+%Create an estimation and validation data split by using the merge
+%operation. The estimation data is about 70% of the runs and the validation
+%data is the remaining 30%. This is a variable ratio that needs exploration
+%of impact on model fit
+
+numRunsEst = floor(numRuns*0.7);
+numRunsVal = numRuns - numRunsEst;
+
+est_data = responseData{1};
+for itr = 2:numRunsEst
+    est_data = merge(est_data,responseData{itr});
+end
+
+val_data = responseData{numRuns};
+
+for itr = 1: numRunsVal
+    val_data = merge(val_data,responseData{numRuns - itr});
+end
+
+
+%The transfer function needs a mapping of number of poles and zeroes for each input
+%and output channel. For simplicity, let's begin with just the road
+%displacement as input and suspension displacement & vehicle displacement
+%as outputs.
 est_data_sim = est_data(:,[1 3],1);
 val_data_sim = val_data(:,[1 3],1);
 
-mp = impulseest(est_data);
-step(mp)
-
+mp = tfest(est_data,4);
+compare(val_data,mp);
 
