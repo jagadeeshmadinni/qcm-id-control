@@ -18,9 +18,9 @@ close all;
 % Let's do 10 runs to begin with
 
 numRuns = 10;
-simTime = 120; % Experiment ends at 120 seconds
+simTime = 120; % Experiment ends at 60 seconds
 sampTime = 0.05; % Sampling set to 0.05 seconds
-estSplit = 0.3;
+estSplit = 0.7;
 modelStepResponse = zeros(numRuns,simTime/sampTime+1,4); %Zeros matrix for storing ideal model step response
 inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
 for i = 1:numRuns
@@ -58,8 +58,8 @@ for i = 1:numRuns
          0 0 0 1];
     D = [0;0;0;0];
 
-    sys_ss_model = ss(A,B,C,D,0.05);
-    modelStepResponse(i,:,:) = step(sys_ss_model,120);
+    sys_ss_model = ss(A,B,C,D);
+    modelStepResponse(i,:,:) = step(sys_ss_model,0:0.05:120);
     inputParams(i,:) = [m_v, m_s, k_s,k_t,b_s];
 
 
@@ -109,11 +109,17 @@ end
 
 
 sys_tf = tfest(est_data,4);
-sys_ss = ssest(est_data,4);
-%sys_armax = armax(est_data);
-sys_n = n4sid(est_data,4);
-figure;
-compare(val_data,sys_tf);
-figure;
-compare(val_data,sys_ss,sys_n);
 
+%sys_armax = armax(est_data);
+Options_n4sid = n4sidOptions;                          
+Options_n4sid.Focus = 'simulation';                    
+                                                  
+sys_n = n4sid(est_data, 4, 'Form', 'free', Options_n4sid);
+sys_ss = ssest(est_data, 4, 'Form', 'free', Options_n4sid);
+%figure;
+%compare(val_data,sys_tf);
+%figure;
+%compare(val_data,sys_ss,sys_n);
+                                                                                                         
+                          
+compare(val_data,sys_ss,sys_n,sys_tf);
