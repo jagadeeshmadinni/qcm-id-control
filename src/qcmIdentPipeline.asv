@@ -1,0 +1,33 @@
+clear all;
+close all;
+
+estSplit = 0.3:0.1:0.8;
+
+% parfor numRuns = 10:100
+%     
+%     [est_data,val_data,modelStepResponse] = generateQCM(numRuns);
+%     [ymod, fit, ic] = identifyQCM(val_data,est_data);
+% 
+% end    
+
+[inputParams,responseData,modelStepResponse] = generateQCM();
+
+numRuns = 15;
+
+ss_fit = zeros(4,numRuns);
+n4s_fit= zeros(4,numRuns);
+tf_fit = zeros(4,numRuns);
+arx_fit = zeros(4,numRuns);
+OE_fit = zeros(4,numRuns);
+BJ_fit = zeros(4,numRuns);
+for itr = 10:numRuns
+
+    [ymod, fit, ic] = identifyQCM(estSplit,responseData);
+    ss_fit(1) = fit{1,1};
+    n4s_fit = fit{2,2};
+    tf_fit = fit{3,3};
+    arx_fit = fit{4,4};
+    OE_fit = fit{5,5};
+    BJ_fit = fit{6,6};
+
+end

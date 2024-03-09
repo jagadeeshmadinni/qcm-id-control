@@ -1,6 +1,5 @@
-clear all;
-close all;
-
+function [ymod, fit, ic] = identifyQCM(numRuns,estSplit)
+%UNTITLED Summary of this function goes here
 
 % Nominal values of the Quarter Car Suspension model from
 % https://ctms.engin.umich.edu/CTMS/index.php?example=Suspension&section=SimulinkModeling
@@ -17,10 +16,10 @@ close all;
 
 % Let's do 10 runs to begin with
 
-numRuns = 10;
+%numRuns = 10;
 simTime = 120; % Experiment ends at 60 seconds
 sampTime = 0.05; % Sampling set to 0.05 seconds
-estSplit = 0.7;
+%estSplit = 0.7;
 modelStepResponse = zeros(numRuns,simTime/sampTime+1,4); %Zeros matrix for storing ideal model step response
 inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
 for i = 1:numRuns
@@ -38,14 +37,7 @@ for i = 1:numRuns
     in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
     in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
     in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
-%     inFileName = sprintf("system_parameters_itr_%d.mat",i);
-%     fullInFileName = fullfile('C:\Users\jmadinn\Documents\Parameter Identfication',inFileName);
-%     inMatFile = matfile(fullInFileName,'writable',true);
-%     inMatFile.m1 = m1;
-%     inMatFile.m2 = m2;
-%     inMatFile.k1 = k1;
-%     inMatFile.b1 = b1;
-%     inMatFile.k2 = k2;
+
 
     A = [0, 1, 0, 0;
         -k_s/m_v,-b_s/m_v,k_s/m_v,b_s/m_v;
@@ -75,7 +67,7 @@ for itr = 1:numRuns
         squeeze(simOut(itr).veh_vel.data)  ...
         squeeze(simOut(itr).susp_y.data)  ...
         squeeze(simOut(itr).susp_vel.data)], ...
-        [squeeze(simOut(itr).Road_y.data)],'Ts',0.05,'SamplingInstants',simOut(itr).tout,'InterSample','foh'); %#ok<*SAGROW> 
+        [squeeze(simOut(itr).Road_y.data)],'Ts',0.05,'SamplingInstants',simOut(itr).tout,'InterSample','foh'); %#ok<*AGROW,*SAGROW> 
         % Set time units to seconds
     responseData{itr}.TimeUnit = 's';
         % Set names of input channels
@@ -145,4 +137,6 @@ sys_ss = ssest(est_data, 4, 'Form', 'free', Options_n4sid);
  sys_BJ = bj(est_data,[nb nc nd  nf nk], Opt_BJ);
                                                                                                          
                           
-compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
+[ymod,fit,ic] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
+
+end
