@@ -14,15 +14,15 @@ estSplit = 0.3;
 
 numRuns = 15;
 
-ss_fit = zeros(4,numRuns);
-n4s_fit= zeros(4,numRuns);
-tf_fit = zeros(4,numRuns);
-arx_fit = zeros(4,numRuns);
-OE_fit = zeros(4,numRuns);
-BJ_fit = zeros(4,numRuns);
+ss_fit = zeros(4,numRuns-10);
+n4s_fit= zeros(4,numRuns-10);
+tf_fit = zeros(4,numRuns-10);
+arx_fit = zeros(4,numRuns-10);
+OE_fit = zeros(4,numRuns-10);
+BJ_fit = zeros(4,numRuns-10);
 for itr = 10:numRuns
     
-    responseData = totalResponseData{1:numRuns};
+    responseData = totalResponseData(1:numRuns);
     [ymod, fit, ic] = identifyQCM(estSplit,responseData);
     ss_fit(:,itr) = fit{1,1};
     n4s_fit(:,itr) = fit{2,2};
