@@ -115,7 +115,10 @@ Options_n4sid = n4sidOptions;
 Options_n4sid.Focus = 'prediction';                    
                                                   
 sys_n = n4sid(est_data, 4, 'Form', 'free', Options_n4sid);
-sys_ss = ssest(est_data, 4, 'Form', 'free', Options_n4sid);
+
+Options_ss = ssestOptions;
+Options_ss.Focus = 'simulation';
+sys_ss = ssest(est_data, 4, 'Form', 'free', Options_ss);
 %figure;
 %compare(val_data,sys_tf);
 %figure;

@@ -1,6 +1,6 @@
 function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
     arguments
-        numRuns uint32 = 100
+        numRuns uint32 = 15
     end
     
     % Nominal values of the Quarter Car Suspension model from
