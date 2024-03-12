@@ -3,87 +3,69 @@ close all;
 
 estSplit = 0.3;
 
-% parfor numRuns = 10:100
-%     
-%     [est_data,val_data,modelStepResponse] = generateQCM(numRuns);
-%     [ymod, fit, ic] = identifyQCM(val_data,est_data);
-% 
-% end    
-
-[inputParams,totalResponseData,modelStepResponse] = generateQCM();
-
-numRuns = 15;
-
-ss_fit = zeros(4,numRuns);
-n4s_fit= zeros(4,numRuns);
-tf_fit = zeros(4,numRuns);
-arx_fit = zeros(4,numRuns);
-OE_fit = zeros(4,numRuns);
-BJ_fit = zeros(4,numRuns);
-computeCost = zeros(6,numRuns);
-for itr = 10:numRuns
+numRuns = 11;
+for loopCounter = 1:2
     
-    responseData = totalResponseData(1:numRuns);
-    [ymod, fit, ic, timeCost] = identifyQCM(estSplit,responseData);
-    ss_fit(:,itr) = fit{1,1};
-    n4s_fit(:,itr) = fit{2,2};
-    tf_fit(:,itr) = fit{3,3};
-    arx_fit(:,itr) = fit{4,4};
-    OE_fit(:,itr) = fit{5,5};
-    BJ_fit(:,itr) = fit{6,6};
-    computeCost(:,itr) = timeCost;
-
+    [inputParams,totalResponseData,modelStepResponse] = generateQCM(numRuns);
+        
+    ss_fit = zeros(4,numRuns-10);
+    n4s_fit= zeros(4,numRuns-10);
+    tf_fit = zeros(4,numRuns-10);
+    arx_fit = zeros(4,numRuns-10);
+    OE_fit = zeros(4,numRuns-10);
+    BJ_fit = zeros(4,numRuns-10);
+    computeCost = zeros(6,numRuns-10);
+    for itr = 10:numRuns
+        
+        responseData = totalResponseData(1:numRuns);
+        [ymod, fit, ic, timeCost] = identifyQCM(estSplit,responseData);
+        ss_fit(:,itr-9) = fit{1,1};
+        n4s_fit(:,itr-9) = fit{2,2};
+        tf_fit(:,itr-9) = fit{3,3};
+        arx_fit(:,itr-9) = fit{4,4};
+        OE_fit(:,itr-9) = fit{5,5};
+        BJ_fit(:,itr-9) = fit{6,6};
+        computeCost(:,itr-9) = timeCost;
+    
+    end
+        avgComputeCost = avgComputeCost + computeCost;
+        
 end
 
-figure;
-plot(10:numRuns,computeCost(1,10:numRuns));
+avgComputeCost = avgComputeCost/loopCounter;
+
+outputList = ["Vehicle Displacement","Vehicle Velocity","Suspension Displacement","Suspension Velocity"];
+t = figure;
+plot(10:numRuns,avgComputeCost(1,1:numRuns-9));
 xlabel("Number of experiments");
 ylabel("Computational Time Cost(s)");
 hold on;
-plot(10:numRuns,computeCost(2,10:numRuns));
-plot(10:numRuns,computeCost(3,10:numRuns));
-plot(10:numRuns,computeCost(4,10:numRuns));
-plot(10:numRuns,computeCost(5,10:numRuns));
-plot(10:numRuns,computeCost(6,10:numRuns));
-legend("Transfer Function Model","State Space Model", "N4SID Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
-hold off;
+plot(10:numRuns,avgComputeCost(2,1:numRuns-9));
+plot(10:numRuns,avgComputeCost(3,1:numRuns-9));
+%plot(10:numRuns,computeCost(4,1:numRuns-9));
+plot(10:numRuns,avgComputeCost(5,1:numRuns-9));
+plot(10:numRuns,avgComputeCost(6,1:numRuns-9));
+%legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
+legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
 
-figure;
-subplot(2,2,1);
-plot(10:numRuns, ss_fit(1,10:numRuns));
-xlabel("Vehicle Displacement");
-ylabel("Percent Fit");
-hold on;
-plot(10:numRuns, n4s_fit(1,10:numRuns));
-plot(10:numRuns, tf_fit(1,10:numRuns));
-plot(10:numRuns, arx_fit(1,10:numRuns));
-plot(10:numRuns, OE_fit(1,10:numRuns));
-plot(10:numRuns, BJ_fit(1,10:numRuns));
-legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
 hold off;
+exportgraphics(t,"TimeCostPlot.png")
+fit = figure;
+for j = 1:4
 
-subplot(2,2,2);
-plot(10:numRuns, ss_fit(2,10:numRuns));
-xlabel("Vehicle Velocity");
-ylabel("Percent Fit");
-hold on;
-plot(10:numRuns, n4s_fit(2,10:numRuns));
-plot(10:numRuns, tf_fit(2,10:numRuns));
-plot(10:numRuns, arx_fit(2,10:numRuns));
-plot(10:numRuns, OE_fit(2,10:numRuns));
-plot(10:numRuns, BJ_fit(2,10:numRuns));
-legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
-hold off;
+    subplot(2,2,j);
+    plot(10:numRuns, ss_fit(j,1:numRuns-9));
+    xlabel(outputList(j));
+    ylabel("Percent Fit");
+    hold on;
+    plot(10:numRuns, n4s_fit(j,1:numRuns-9));
+    plot(10:numRuns, tf_fit(j,1:numRuns-9));
+    %plot(10:numRuns, arx_fit(j,1:numRuns-9));
+    plot(10:numRuns, OE_fit(j,1:numRuns-9));
+    plot(10:numRuns, BJ_fit(j,1:numRuns-9));
+    %legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
+    legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
+    hold off;
+end
 
-subplot(2,2,3);
-plot(10:numRuns, ss_fit(3,10:numRuns));
-xlabel("Suspension Displacement");
-ylabel("Percent Fit");
-hold on;
-plot(10:numRuns, n4s_fit(3,10:numRuns));
-plot(10:numRuns, tf_fit(3,10:numRuns));
-plot(10:numRuns, arx_fit(3,10:numRuns));
-plot(10:numRuns, OE_fit(3,10:numRuns));
-plot(10:numRuns, BJ_fit(3,10:numRuns));
-legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
-hold off;
+exportgraphics(fit,"OutputFit.png");
