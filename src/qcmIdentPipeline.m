@@ -2,10 +2,10 @@ clear all;
 close all;
 
 estSplit = 0.3;
-numRuns = 11;
+numRuns = 50;
 avgComputeCost = zeros(6,numRuns-10);
 
-for loopCounter = 1:2
+for loopCounter = 1:5
     
     [inputParams,totalResponseData,modelStepResponse] = generateQCM(numRuns);
         
