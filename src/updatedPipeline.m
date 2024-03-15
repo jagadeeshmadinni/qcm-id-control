@@ -26,7 +26,7 @@ computeCost = zeros(6,numRuns-9);
 for runCount = 10:numRuns
     %Split the validation and estimation data based on estSplit
     est_data = merge(sbResponseData{1:estSplitArray(runCount-9)});
-    val_data = merge(sbResponseData{estSplitArray(runCount-9):runCount});
+    val_data = merge(sbResponseData{estSplitArray(runCount-9)+1:runCount});
     [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data);
     computeCost(:,runCount-9) = timeCost;
     %Compare model responses with validation data in each case
