@@ -1,4 +1,4 @@
-function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
+function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
     arguments
         numRuns uint32 = 15
     end
@@ -16,11 +16,8 @@ function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
     % by a distance of 150 mm
     
     
-
-    simTime = 120; % Experiment ends at 60 seconds
-    sampTime = 0.05; % Sampling set to 0.05 seconds
-    modelStepResponse = zeros(numRuns,simTime/sampTime+1,4); %Zeros matrix for storing ideal model step response
     inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
+    t=(0:0.05:120)';
     for i = 1:numRuns
     
         s = rng(i);
@@ -35,7 +32,7 @@ function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
         in(i) = setBlockParameter(in(i),'quarterCarModel/b1','D',num2str(b_s));
         in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
         in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
-        in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
+        in(i) = setModelParameter(in(i),'StartTime','0','StopTime','120','FixedStep','0.05');
     
         A = [0, 1, 0, 0;
             -k_s/m_v,-b_s/m_v,k_s/m_v,b_s/m_v;
@@ -49,12 +46,23 @@ function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
         D = [0;0;0;0];
     
         sys_ss_model = ss(A,B,C,D);
-        modelStepResponse(i,:,:) = step(sys_ss_model,0:0.05:120);
+        
+        modelStepResponse{i} = iddata([step(sys_ss_model,0:0.05:120)],[ones(size(t))],'Ts',0.05,'SamplingInstants',t);
         inputParams(i,:) = [m_v, m_s, k_s,k_t,b_s];
+        modelStepResponse{i}.TimeUnit = 's';
+        % Set names of input channels
+        modelStepResponse{i}.InputName = {'RoadDisp'};
+        % Set units for input variables
+        modelStepResponse{i}.InputUnit = {'m'};
+        % Set name of output channels
+        modelStepResponse{i}.OutputName = {'VehDisp','VehVel','SuspDisp','SuspVel'};
+        % Set unit of output channels
+        modelStepResponse{i}.OutputUnit = {'m','m/s','m','m/s'};
     
     
     end 
     
+    stepResponse = merge(modelStepResponse{:});
     simOut = parsim(in, 'ShowSimulationManager', 'off');
     
     %Create iddata objects from the simulation output objects to load into the

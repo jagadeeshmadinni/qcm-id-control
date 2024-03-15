@@ -1,13 +1,23 @@
 clear all;
 close all;
+%Use a default estimation data split of 0.7
+estSplit = 0.7;
 
-estSplit = 0.3;
-numRuns = 50;
+%Declare the number of experiments to generate data
+numRuns = 20;
+
+%Repeated execution is required to compute time cost of the functions.
+%Therefore, we initialize a variable to calculate average time cost
 avgComputeCost = zeros(6,numRuns-10);
 
-for loopCounter = 1:5
-    
-    [inputParams,totalResponseData,modelStepResponse] = generateQCM(numRuns);
+%Generate the model response for two different stimuli - the pre-determined
+%road profile from Simscape and a unit step input. Store input parameters
+%as well as response data
+[inputParams,totalResponseData,modelStepResponse] = generateQCM(numRuns);
+
+%Perform model estimation over a desired number of times to capture time
+%cost. Save the fit data
+for loopCounter = 1:10  
         
     ss_fit = zeros(4,numRuns-10);
     n4s_fit= zeros(4,numRuns-10);
@@ -16,7 +26,7 @@ for loopCounter = 1:5
     OE_fit = zeros(4,numRuns-10);
     BJ_fit = zeros(4,numRuns-10);
     computeCost = zeros(6,numRuns-10);
-    for itr = 10:numRuns
+    parfor itr = 10:numRuns
         
         responseData = totalResponseData(1:numRuns);
         [ymod, fit, ic, timeCost] = identifyQCM(estSplit,responseData);

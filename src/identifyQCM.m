@@ -1,22 +1,6 @@
-function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
+function [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(est_data)
 
-    
-    %Create an estimation and validation data split by using the merge
-    %operation.
-    numRunsTotal = size(responseData,2);
-    numRunsEst = floor(numRunsTotal*estSplit);
-    numRunsVal = numRunsTotal - numRunsEst;
-    
-    est_data = responseData{1};
-    for itr = 2:numRunsEst
-        est_data = merge(est_data,responseData{itr});
-    end
-    
-    val_data = responseData{numRunsTotal};
-    
-    for itr = 1: numRunsVal
-        val_data = merge(val_data,responseData{numRunsTotal - itr});
-    end
+
     timeCost = zeros(6,1);
     %Estimate using the Transfer Function Model. Time the estimation
     tf_time = tic();
@@ -34,8 +18,9 @@ function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
     %Estimate using the State Space Model. Time the estimation
     Options_ss = ssestOptions;
     Options_ss.Focus = 'simulation';
+
     ss_time = tic();
-    sys_ss = ssest(est_data, 4, 'Form', 'free',Options_ss);
+    sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',0.05, Options_ss);
     timeCost(3) = toc(ss_time);
     
      %Estimate using the Linear ARX Model. Time the estimation
@@ -69,9 +54,5 @@ function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
      time_BJ = tic();
      sys_BJ = bj(est_data,[nb nc nd  nf nk], Opt_BJ);
      timeCost(6) = toc(time_BJ);                                                                                                             
-    
-    %Compare the performance of all methods and capture the results to
-    %return to the calling script
-    [ymod,fit,ic] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
 
 end

@@ -25,6 +25,7 @@ modelStepResponse = zeros(numRuns,simTime/sampTime+1,4); %Zeros matrix for stori
 inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
 for i = 1:numRuns
 
+    %Set up the Simulation Input objects with system parameters
     s = rng(i);
     m_v = (1 + randi(10)/100)*2500;
     m_s= (1 + randi(10)/100)*320;
@@ -38,15 +39,9 @@ for i = 1:numRuns
     in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
     in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
     in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
-%     inFileName = sprintf("system_parameters_itr_%d.mat",i);
-%     fullInFileName = fullfile('C:\Users\jmadinn\Documents\Parameter Identfication',inFileName);
-%     inMatFile = matfile(fullInFileName,'writable',true);
-%     inMatFile.m1 = m1;
-%     inMatFile.m2 = m2;
-%     inMatFile.k1 = k1;
-%     inMatFile.b1 = b1;
-%     inMatFile.k2 = k2;
 
+    % Generate a step response of the system for validating identified
+    % model
     A = [0, 1, 0, 0;
         -k_s/m_v,-b_s/m_v,k_s/m_v,b_s/m_v;
         0, 0, 0, 1;
@@ -108,17 +103,17 @@ for itr = 1: numRunsVal
 end
 
 
-sys_tf = tfest(est_data,4);
+sys_tf = tfest(est_data,4,"Ts",0.05);
 
 %sys_armax = armax(est_data);
 Options_n4sid = n4sidOptions;                          
-Options_n4sid.Focus = 'prediction';                    
+Options_n4sid.Focus = 'simulation';                    
                                                   
 sys_n = n4sid(est_data, 4, 'Form', 'free', Options_n4sid);
 
 Options_ss = ssestOptions;
 Options_ss.Focus = 'simulation';
-sys_ss = ssest(est_data, 4, 'Form', 'free', Options_ss);
+sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',0.05, Options_ss);
 %figure;
 %compare(val_data,sys_tf);
 %figure;
@@ -146,6 +141,5 @@ sys_ss = ssest(est_data, 4, 'Form', 'free', Options_ss);
  nf = [2;2;2;2];                              
  nk = [1;1;1;1];                              
  sys_BJ = bj(est_data,[nb nc nd  nf nk], Opt_BJ);
-                                                                                                         
-                          
+                                                                                                                                 
 compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);

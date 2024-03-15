@@ -1,13 +1,13 @@
-function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
+function [ymod, fit, ic,timeCost] = identifyQCM(estimationData)
 
     
     %Create an estimation and validation data split by using the merge
     %operation.
-    numRunsTotal = size(responseData,2);
+    numRunsTotal = size(estimationData,2);
     numRunsEst = floor(numRunsTotal*estSplit);
     numRunsVal = numRunsTotal - numRunsEst;
     
-    est_data = responseData{1};
+    est_data = es{1};
     for itr = 2:numRunsEst
         est_data = merge(est_data,responseData{itr});
     end
@@ -18,11 +18,12 @@ function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
         val_data = merge(val_data,responseData{numRunsTotal - itr});
     end
     timeCost = zeros(6,1);
-    %Estimate using the Transfer Function Model
+    %Estimate using the Transfer Function Model. Time the estimation
     tf_time = tic();
     sys_tf = tfest(est_data,4);
     timeCost(1) = toc(tf_time);
 
+    %Estimate using the N4SID Model. Time the estimation
     Options_n4sid = n4sidOptions;                          
     Options_n4sid.Focus = 'simulation';                    
     
@@ -30,21 +31,25 @@ function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
     sys_n = n4sid(est_data, 4, 'Form', 'free', Options_n4sid);
     timeCost(2) = toc(n_time);
     
-    
+    %Estimate using the State Space Model. Time the estimation
     Options_ss = ssestOptions;
     Options_ss.Focus = 'simulation';
     ss_time = tic();
     sys_ss = ssest(est_data, 4, 'Form', 'free',Options_ss);
     timeCost(3) = toc(ss_time);
     
+     %Estimate using the Linear ARX Model. Time the estimation
      Opt = arxOptions;                      
-     Opt.Focus = 'prediction';              
-     na = [5 5 5 5;5 5 5 5;5 5 5 5;5 5 5 5];
-     nb = [2;2;2;2];                        
-     nk = [1;1;1;1];                        
-                                            
+    Opt.Focus = 'prediction';              
+    na = [5 5 5 5;5 5 5 5;5 5 5 5;5 5 5 5];
+    nb = [2;2;2;2];                        
+    nk = [1;1;1;1];                         
+     
+     time_arx = tic();
      sys_arx = arx(est_data,[na,nb,nk], Opt);
-    
+     timeCost(5) = toc(time_arx);                        
+ 
+    %Estimate using the Output Error Model. Time the estimation
      Opt_OE = oeOptions;                    
      Opt_OE.Focus = 'prediction';           
      nb = [2;2;2;2];                     
@@ -54,7 +59,8 @@ function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
      sys_OE = oe(est_data,[nb nf nk], Opt_OE);
      timeCost(5) = toc(time_OE);
     
-      Opt_BJ = bjOptions;                             
+     %Estimate using the Box Jenkins Model. Time the estimation
+     Opt_BJ = bjOptions;                             
      nb = [2;2;2;2];                              
      nc = [2;2;2;2];                              
      nd = [2;2;2;2];                              
@@ -63,7 +69,10 @@ function [ymod, fit, ic,timeCost] = identifyQCM(estSplit,responseData)
      time_BJ = tic();
      sys_BJ = bj(est_data,[nb nc nd  nf nk], Opt_BJ);
      timeCost(6) = toc(time_BJ);                                                                                                             
-                              
+    
+    %Compare the performance of all methods and capture the results to
+    %return to the calling script
+
     [ymod,fit,ic] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
 
 end

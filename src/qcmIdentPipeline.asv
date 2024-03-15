@@ -1,12 +1,18 @@
 clear all;
 close all;
+%Use a default estimation data split of 0.7
+estSplit = 0.7;
 
-estSplit = 0.3;
+%Declare the number of experiments to generate data
+numRuns = 20;
 
-numRuns = 11;
-for loopCounter = 1:2
-    
-    [inputParams,totalResponseData,modelStepResponse] = generateQCM(numRuns);
+%Repeated execution is required to compute time cost of the functions. T
+avgComputeCost = zeros(6,numRuns-10);
+[inputParams,totalResponseData,modelStepResponse] = generateQCM(numRuns);
+
+
+
+for loopCounter = 1:10  
         
     ss_fit = zeros(4,numRuns-10);
     n4s_fit= zeros(4,numRuns-10);
@@ -15,7 +21,7 @@ for loopCounter = 1:2
     OE_fit = zeros(4,numRuns-10);
     BJ_fit = zeros(4,numRuns-10);
     computeCost = zeros(6,numRuns-10);
-    for itr = 10:numRuns
+    parfor itr = 10:numRuns
         
         responseData = totalResponseData(1:numRuns);
         [ymod, fit, ic, timeCost] = identifyQCM(estSplit,responseData);

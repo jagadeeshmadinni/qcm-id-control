@@ -1,6 +1,6 @@
 function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
     arguments
-        numRuns uint32 = 10
+        numRuns uint32 = 15
     end
     
     % Nominal values of the Quarter Car Suspension model from
@@ -49,7 +49,8 @@ function [inputParams,responseData,modelStepResponse] = generateQCM(numRuns)
         D = [0;0;0;0];
     
         sys_ss_model = ss(A,B,C,D);
-        modelStepResponse(i,:,:) = step(sys_ss_model,0:0.05:120);
+        t=0:0.05:120;
+        modelStepResponse{i} = iddata(step(sys_ss_model,0:0.05:120),ones(s));
         inputParams(i,:) = [m_v, m_s, k_s,k_t,b_s];
     
     
