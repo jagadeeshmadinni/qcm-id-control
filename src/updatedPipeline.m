@@ -22,7 +22,8 @@ numRunsArray = 10:numRuns;
 estSplitArray = floor(numRunsArray*estSplit);
 valSplitArray = numRunsArray-estSplitArray;
 computeCost = zeros(6,numRuns-9);
-
+fit_sb_array = cell(numRuns-9,6,4);
+fit_step_array = cell(numRuns-9,6,11);
 for runCount = 10:numRuns
     %Split the validation and estimation data based on estSplit
     est_data = merge(sbResponseData{1:estSplitArray(runCount-9)});
@@ -33,9 +34,9 @@ for runCount = 10:numRuns
     [ymod_sb,fit_sb,ic_sb] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
     %Compare step responses of estimated models with known step response data
     [ymod_step,fit_step,ic_step] = compare(stepResponse,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
-
+    fit_sb_array(runCount-9,:,:) = fit_sb;
+    fit_step_array(runCount-9,:,:) = fit_step;
 end
-
 
 
 
