@@ -21,11 +21,11 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
     for i = 1:numRuns
     
         s = rng(i);
-        m_v = (1 + randi(10)/100)*2500;
-        m_s= (1 + randi(10)/100)*320;
-        k_s = (1 + randi(10)/100)*80000;
-        k_t = (1 + randi(10)/100)*500000;
-        b_s = (1 + randi(10)/100)*350;
+        m_v = (1 + randi([-5,5])*0.01)*2500;
+        m_s= (1 + randi([-5,5])*0.01)*320;
+        k_s = (1 + randi([-5,5])*0.01)*80000;
+        k_t = (1 + randi([-5,5])*0.01)*500000;
+        b_s = (1 + randi([-5,5])*0.01)*350;
         in(i) = Simulink.SimulationInput('quarterCarModel');
         in(i) = setBlockParameter(in(i),'quarterCarModel/m1','mass',num2str(m_v));
         in(i) = setBlockParameter(in(i),'quarterCarModel/k1','spr_rate',num2str(k_s));
