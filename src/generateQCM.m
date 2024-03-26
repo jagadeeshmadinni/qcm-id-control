@@ -49,7 +49,7 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
         
         modelStepResponse{i} = iddata([step(sys_ss_model,0:0.05:120)],[ones(size(t))],'Ts',0.05,'SamplingInstants',t);
         inputParams(i,:) = [m_v, m_s, k_s,k_t,b_s];
-        modelStepResponse{i}.TimeUnit = 's';
+        modelStepResponse{i}.TimeUnit = {'s'};
         % Set names of input channels
         modelStepResponse{i}.InputName = {'RoadDisp'};
         % Set units for input variables

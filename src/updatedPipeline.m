@@ -25,13 +25,26 @@ valSplitArray = numRunsArray-estSplitArray;
 computeCost = zeros(6,runSize);
 fit_sb_array = zeros(runSize,4,6);
 fit_step_array = zeros(runSize,4,6);
+% sys_ss_array = [];
+% sys_n_array = [];
+% sys_tf_array = [];
+% sys_arx_array = [];
+% sys_OE_array = [];
+% sys_BJ_array = [];
 
 parfor runCount = 10:numRuns
     %Split the validation and estimation data based on estSplit
     est_data = merge(sbResponseData{1:estSplitArray(runCount-9)});
     val_data = merge(sbResponseData{estSplitArray(runCount-9)+1:runCount});
-    [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data);
+    runCount
+    [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data)
     computeCost(:,runCount-9) = timeCost;
+%     sys_ss_array = [sys_ss_array;sys_ss];
+%     sys_n_array = [sys_n_array;sys_n];
+%     sys_tf_array = [sys_tf_array;sys_tf];
+%     sys_arx_array = [sys_arx_array;sys_arx];
+%     sys_OE_array = [sys_OE_array;sys_OE];
+%     sys_BJ_array = [sys_BJ_array;sys_BJ];
     %Compare model responses with validation data in each case
     [ymod_sb,fit_sb,ic_sb] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
     avg_fit_sb = reshape(mean(cell2mat(fit_sb),2),[4,6]);

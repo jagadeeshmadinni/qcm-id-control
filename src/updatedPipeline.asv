@@ -4,7 +4,7 @@ close all;
 estSplit = 0.7;
 
 %Declare the number of experiments to generate data
-numRuns = 20;
+numRuns = 50;
 
 %Repeated execution is required to compute time cost of the functions.
 %Therefore, we initialize a variable to calculate average time cost
@@ -25,6 +25,12 @@ valSplitArray = numRunsArray-estSplitArray;
 computeCost = zeros(6,runSize);
 fit_sb_array = zeros(runSize,4,6);
 fit_step_array = zeros(runSize,4,6);
+% sys_ss_array = [];
+% sys_n_array = [];
+% sys_tf_array = [];
+% sys_arx_array = [];
+% sys_OE_array = [];
+% sys_BJ_array = [];
 
 parfor runCount = 10:numRuns
     %Split the validation and estimation data based on estSplit
@@ -32,6 +38,12 @@ parfor runCount = 10:numRuns
     val_data = merge(sbResponseData{estSplitArray(runCount-9)+1:runCount});
     [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data);
     computeCost(:,runCount-9) = timeCost;
+%     sys_ss_array = [sys_ss_array;sys_ss];
+%     sys_n_array = [sys_n_array;sys_n];
+%     sys_tf_array = [sys_tf_array;sys_tf];
+%     sys_arx_array = [sys_arx_array;sys_arx];
+%     sys_OE_array = [sys_OE_array;sys_OE];
+%     sys_BJ_array = [sys_BJ_array;sys_BJ];
     %Compare model responses with validation data in each case
     [ymod_sb,fit_sb,ic_sb] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
     avg_fit_sb = reshape(mean(cell2mat(fit_sb),2),[4,6]);
@@ -67,18 +79,41 @@ for j = 1:4
 
     subplot(2,2,j);
     plot(10:numRuns, fit_sb_array(:,j,1));
-    xlabel(outputList(j));
+    title(outputList(j));
+    xlabel("Number of experiments");
     ylabel("Percent Fit");
     hold on;
-    plot(10:numRuns, n4s_fit(j,1:numRuns-9));
-    plot(10:numRuns, tf_fit(j,1:numRuns-9));
-    %plot(10:numRuns, arx_fit(j,1:numRuns-9));
-    plot(10:numRuns, OE_fit(j,1:numRuns-9));
-    plot(10:numRuns, BJ_fit(j,1:numRuns-9));
+    plot(10:numRuns, fit_sb_array(:,j,2));
+    plot(10:numRuns, fit_sb_array(:,j,3));
+    %plot(10:numRuns, fit_sb_array(:,j,4));
+    plot(10:numRuns, fit_sb_array(:,j,5));
+    plot(10:numRuns, fit_sb_array(:,j,6));
     %legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
     legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
     hold off;
 end
 
 exportgraphics(fit,"OutputFit.png");
+
+
+step_fit = figure;
+for itr = 1:4
+
+    subplot(2,2,itr);
+    plot(10:numRuns, fit_step_array(:,itr,1));
+    title(outputList(itr));
+    xlabel("Number of experiments");
+    ylabel("Percent Fit");
+    hold on;
+    plot(10:numRuns, fit_step_array(:,itr,2));
+    plot(10:numRuns, fit_step_array(:,itr,3));
+    %plot(10:numRuns, fit_step_array(:,itr,4));
+    plot(10:numRuns, fit_step_array(:,itr,5));
+    plot(10:numRuns, fit_step_array(:,itr,6));
+    %legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
+    legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
+    hold off;
+end
+
+exportgraphics(step_fit,"OutputStepFit.png");
 
