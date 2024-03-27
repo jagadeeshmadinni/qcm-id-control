@@ -4,7 +4,7 @@ close all;
 estSplit = 0.7;
 
 %Declare the number of experiments to generate data
-numRuns = 100;
+numRuns = 25;
 
 %Repeated execution is required to compute time cost of the functions.
 %Therefore, we initialize a variable to calculate average time cost
@@ -36,8 +36,7 @@ parfor runCount = 10:numRuns
     %Split the validation and estimation data based on estSplit
     est_data = merge(sbResponseData{1:estSplitArray(runCount-9)});
     val_data = merge(sbResponseData{estSplitArray(runCount-9)+1:runCount});
-    runCount
-    [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data)
+    [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data);
     computeCost(:,runCount-9) = timeCost;
 %     sys_ss_array = [sys_ss_array;sys_ss];
 %     sys_n_array = [sys_n_array;sys_n];

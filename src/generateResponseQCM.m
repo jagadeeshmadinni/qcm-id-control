@@ -23,6 +23,7 @@ sampTime = 0.05; % Sampling set to 0.05 seconds
 estSplit = 0.7;
 modelStepResponse = zeros(numRuns,simTime/sampTime+1,4); %Zeros matrix for storing ideal model step response
 inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
+vel = 10*(5/18);
 for i = 1:numRuns
 
     %Set up the Simulation Input objects with system parameters
@@ -32,12 +33,20 @@ for i = 1:numRuns
     k_s = (1 + randi(10)/100)*80000;
     k_t = (1 + randi(10)/100)*500000;
     b_s = (1 + randi(10)/100)*350;
-    in(i) = Simulink.SimulationInput('quarterCarModel');
-    in(i) = setBlockParameter(in(i),'quarterCarModel/m1','mass',num2str(m_v));
-    in(i) = setBlockParameter(in(i),'quarterCarModel/k1','spr_rate',num2str(k_s));
-    in(i) = setBlockParameter(in(i),'quarterCarModel/b1','D',num2str(b_s));
-    in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
-    in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
+%     in(i) = Simulink.SimulationInput('quarterCarModel');
+%     in(i) = setBlockParameter(in(i),'quarterCarModel/m1','mass',num2str(m_v));
+%     in(i) = setBlockParameter(in(i),'quarterCarModel/k1','spr_rate',num2str(k_s));
+%     in(i) = setBlockParameter(in(i),'quarterCarModel/b1','D',num2str(b_s));
+%     in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
+%     in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
+%     in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
+
+    in(i) = Simulink.SimulationInput('quarterCarModelUpdated');
+    in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/m1','mass',num2str(m_v));
+    in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/k1','spr_rate',num2str(k_s));
+    in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/b1','D',num2str(b_s));
+    in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/m2','mass',num2str(m_s));
+    in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/k2','spr_rate',num2str(k_t));
     in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
 
     % Generate a step response of the system for validating identified
@@ -60,7 +69,7 @@ for i = 1:numRuns
 
 end 
 
-simOut = parsim(in, 'ShowSimulationManager', 'off');
+simOut = parsim(in, 'ShowSimulationManager', 'off', 'TransferBaseWorkspaceVariables','on');
 
 %Create iddata objects from the simulation output objects to load into the
 %System Identification Toolbox

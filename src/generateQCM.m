@@ -18,6 +18,7 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
     
     inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
     t=(0:0.05:120)';
+    vel = 10*(5/18);
     for i = 1:numRuns
     
         s = rng(i);
@@ -26,14 +27,24 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
         k_s = (1 + randi([-5,5])*0.01)*80000;
         k_t = (1 + randi([-5,5])*0.01)*500000;
         b_s = (1 + randi([-5,5])*0.01)*350;
-        in(i) = Simulink.SimulationInput('quarterCarModel');
-        in(i) = setBlockParameter(in(i),'quarterCarModel/m1','mass',num2str(m_v));
-        in(i) = setBlockParameter(in(i),'quarterCarModel/k1','spr_rate',num2str(k_s));
-        in(i) = setBlockParameter(in(i),'quarterCarModel/b1','D',num2str(b_s));
-        in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
-        in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
-        in(i) = setModelParameter(in(i),'StartTime','0','StopTime','120','FixedStep','0.05');
+%         in(i) = Simulink.SimulationInput('quarterCarModel');
+%         in(i) = setBlockParameter(in(i),'quarterCarModel/m1','mass',num2str(m_v));
+%         in(i) = setBlockParameter(in(i),'quarterCarModel/k1','spr_rate',num2str(k_s));
+%         in(i) = setBlockParameter(in(i),'quarterCarModel/b1','D',num2str(b_s));
+%         in(i) = setBlockParameter(in(i),'quarterCarModel/m2','mass',num2str(m_s));
+%         in(i) = setBlockParameter(in(i),'quarterCarModel/k2','spr_rate',num2str(k_t));
+%         in(i) = setModelParameter(in(i),'StartTime','0','StopTime','120','FixedStep','0.05');
     
+        in(i) = Simulink.SimulationInput('quarterCarModelUpdated');
+        in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/m1','mass',num2str(m_v));
+        in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/k1','spr_rate',num2str(k_s));
+        in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/b1','D',num2str(b_s));
+        in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/m2','mass',num2str(m_s));
+        in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/k2','spr_rate',num2str(k_t));
+        in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
+
+
+
         A = [0, 1, 0, 0;
             -k_s/m_v,-b_s/m_v,k_s/m_v,b_s/m_v;
             0, 0, 0, 1;
@@ -49,7 +60,7 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
         
         modelStepResponse{i} = iddata([step(sys_ss_model,0:0.05:120)],[ones(size(t))],'Ts',0.05,'SamplingInstants',t);
         inputParams(i,:) = [m_v, m_s, k_s,k_t,b_s];
-        modelStepResponse{i}.TimeUnit = {'s'};
+        modelStepResponse{i}.TimeUnit = 's';
         % Set names of input channels
         modelStepResponse{i}.InputName = {'RoadDisp'};
         % Set units for input variables
@@ -63,8 +74,11 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
     end 
     
     stepResponse = merge(modelStepResponse{:});
-    simOut = parsim(in, 'ShowSimulationManager', 'off');
-    
+    simOut = parsim(in, 'ShowSimulationManager', 'off', 'TransferBaseWorkspaceVariables','on');
+
+    for i = 1:numRuns
+        disp(simOut(i).ErrorMessage)
+    end
     %Create iddata objects from the simulation output objects to load into the
     %System Identification Toolbox
     for itr = 1:numRuns
