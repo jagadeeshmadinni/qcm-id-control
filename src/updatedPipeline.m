@@ -4,7 +4,7 @@ close all;
 estSplit = 0.7;
 
 %Declare the number of experiments to generate data
-numRuns = 25;
+numRuns = 100;
 
 %Repeated execution is required to compute time cost of the functions.
 %Therefore, we initialize a variable to calculate average time cost
