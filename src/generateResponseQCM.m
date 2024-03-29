@@ -1,5 +1,5 @@
 clear all;
-close all;
+%close all;
 
 
 % Nominal values of the Quarter Car Suspension model from
@@ -150,5 +150,5 @@ sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',0.05, Options_ss);
  nf = [2;2;2;2];                              
  nk = [1;1;1;1];                              
  sys_BJ = bj(est_data,[nb nc nd  nf nk], Opt_BJ);
-                                                                                                                                 
+figure;                                                                                                                                 
 compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);

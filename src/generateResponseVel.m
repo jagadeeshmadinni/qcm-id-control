@@ -1,6 +1,6 @@
-function [inputParams,responseData,stepResponse,vel] = generateResponseVel(numRuns)
+function [inputParams,responseData,stepResponse,maxVel] = generateResponseVel(maxVel)
     arguments
-        numRuns uint32 = 15
+        maxVel double = 15
     end
     
     % Nominal values of the Quarter Car Suspension model from
@@ -15,10 +15,10 @@ function [inputParams,responseData,stepResponse,vel] = generateResponseVel(numRu
     % bumps represented by a sine wave with an amplitude of 75 mm and separated
     % by a distance of 150 mm
     
-    
+    numRuns = size(10:maxVel,2);
     inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
-    t=(0:0.05:120)';
-    vel = 10*(5/18);
+    timeSamples=(0:0.05:60)';
+    velArray = (10:maxVel)*5/18;
     for i = 1:numRuns
     
         s = rng(i);
@@ -35,8 +35,7 @@ function [inputParams,responseData,stepResponse,vel] = generateResponseVel(numRu
         in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/m2','mass',num2str(m_s));
         in(i) = setBlockParameter(in(i),'quarterCarModelUpdated/k2','spr_rate',num2str(k_t));
         in(i) = setModelParameter(in(i),'StartTime','0','StopTime','60','FixedStep','0.05');
-
-
+        in(i) = setVariable(in(i),'vel',velArray(i));
 
         A = [0, 1, 0, 0;
             -k_s/m_v,-b_s/m_v,k_s/m_v,b_s/m_v;
@@ -51,7 +50,7 @@ function [inputParams,responseData,stepResponse,vel] = generateResponseVel(numRu
     
         sys_ss_model = ss(A,B,C,D);
         
-        modelStepResponse{i} = iddata([step(sys_ss_model,0:0.05:120)],[ones(size(t))],'Ts',0.05,'SamplingInstants',t);
+        modelStepResponse{i} = iddata([step(sys_ss_model,0:0.05:60)],[ones(size(timeSamples))],'Ts',0.05,'SamplingInstants',timeSamples);
         inputParams(i,:) = [m_v, m_s, k_s,k_t,b_s];
         modelStepResponse{i}.TimeUnit = 's';
         % Set names of input channels

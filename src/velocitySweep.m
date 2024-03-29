@@ -2,18 +2,17 @@ clear all;
 close all;
 %Use a default estimation data split of 0.7
 estSplit = 0.7;
-
+maxVel = 15;
 %Declare the number of experiments to generate data
-numRuns = 11;
+numRuns = size(10:maxVel,2);
 
 %Repeated execution is required to compute time cost of the functions.
 %Therefore, we initialize a variable to calculate average time cost
 avgComputeCost = zeros(6,numRuns-10);
-vel = 10;
 %Generate the model response for two different stimuli - the pre-determined
 %road profile from Simscape and a unit step input. Store input parameters
 %as well as response data
-[inputParams,sbResponseData,stepResponse] = generateResponseVel(numRuns,vel);
+[inputParams,sbResponseData,stepResponse] = generateResponseVel(maxVel);
 
 
 %Initiate a parfor loop to conduct parallel estimation
@@ -25,25 +24,15 @@ valSplitArray = numRunsArray-estSplitArray;
 computeCost = zeros(6,runSize);
 fit_sb_array = zeros(runSize,4,6);
 fit_step_array = zeros(runSize,4,6);
-% sys_ss_array = [];
-% sys_n_array = [];
-% sys_tf_array = [];
-% sys_arx_array = [];
-% sys_OE_array = [];
-% sys_BJ_array = [];
+
 
 parfor runCount = 10:numRuns
     %Split the validation and estimation data based on estSplit
     est_data = merge(sbResponseData{1:estSplitArray(runCount-9)});
     val_data = merge(sbResponseData{estSplitArray(runCount-9)+1:runCount});
-    [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(val_data);
+    [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(est_data);
     computeCost(:,runCount-9) = timeCost;
-%     sys_ss_array = [sys_ss_array;sys_ss];
-%     sys_n_array = [sys_n_array;sys_n];
-%     sys_tf_array = [sys_tf_array;sys_tf];
-%     sys_arx_array = [sys_arx_array;sys_arx];
-%     sys_OE_array = [sys_OE_array;sys_OE];
-%     sys_BJ_array = [sys_BJ_array;sys_BJ];
+
     %Compare model responses with validation data in each case
     [ymod_sb,fit_sb,ic_sb] = compare(val_data,sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ);
     avg_fit_sb = reshape(mean(cell2mat(fit_sb),2),[4,6]);
