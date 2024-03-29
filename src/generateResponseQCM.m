@@ -129,7 +129,7 @@ sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',0.05, Options_ss);
 %compare(val_data,sys_ss,sys_n);
 
  Opt = arxOptions;                      
- Opt.Focus = 'prediction';              
+ Opt.Focus = 'simulation';              
  na = [5 5 5 5;5 5 5 5;5 5 5 5;5 5 5 5];
  nb = [2;2;2;2];                        
  nk = [1;1;1;1];                        
@@ -137,7 +137,7 @@ sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',0.05, Options_ss);
  sys_arx = arx(est_data,[na,nb,nk], Opt);
 
  Opt_OE = oeOptions;                    
- Opt_OE.Focus = 'prediction';           
+ Opt_OE.Focus = 'simulation';           
  nb = [2;2;2;2];                     
  nf = [2;2;2;2];                     
  nk = [1;1;1;1];                     
