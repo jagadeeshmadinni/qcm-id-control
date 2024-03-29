@@ -1,6 +1,7 @@
-function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
+function [inputParams,responseData,stepResponse] = generateQCM(numRuns,vel)
     arguments
         numRuns uint32 = 15
+        vel uint32 = 10
     end
     
     % Nominal values of the Quarter Car Suspension model from
@@ -18,7 +19,7 @@ function [inputParams,responseData,stepResponse] = generateQCM(numRuns)
     
     inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
     t=(0:0.05:120)';
-    vel = 10*(5/18);
+    
     for i = 1:numRuns
     
         s = rng(i);

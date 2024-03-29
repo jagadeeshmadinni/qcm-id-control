@@ -2,9 +2,11 @@ clear all;
 close all;
 %Use a default estimation data split of 0.7
 estSplit = 0.7;
-
+vel = 10*(5/18);
 %Declare the number of experiments to generate data
+
 numRuns = 11;
+
 
 %Repeated execution is required to compute time cost of the functions.
 %Therefore, we initialize a variable to calculate average time cost
@@ -13,7 +15,9 @@ vel = 10;
 %Generate the model response for two different stimuli - the pre-determined
 %road profile from Simscape and a unit step input. Store input parameters
 %as well as response data
+
 [inputParams,sbResponseData,stepResponse] = generateResponseVel(numRuns,vel);
+
 
 
 %Initiate a parfor loop to conduct parallel estimation
