@@ -10,7 +10,7 @@ numRuns = 11;
 
 %Repeated execution is required to compute time cost of the functions.
 %Therefore, we initialize a variable to calculate average time cost
-avgComputeCost = zeros(6,numRuns-10);
+avgComputeCost = zeros(6,numRuns-9);
 vel = 10;
 %Generate the model response for two different stimuli - the pre-determined
 %road profile from Simscape and a unit step input. Store input parameters

@@ -16,10 +16,10 @@ function [inputParams,responseData,stepResponse,maxVel] = generateResponseVel(ma
     % by a distance of 150 mm
     
     numRuns = size(10:maxVel,2);
-    inputParams = zeros(numRuns,5); % m_v, m_s, k_s,k_t,b_s
+    inputParams = zeros(maxVel,5); % m_v, m_s, k_s,k_t,b_s
     timeSamples=(0:0.05:60)';
-    velArray = (10:maxVel)*5/18;
-    for i = 1:numRuns
+    velArray = (1:maxVel)*5/18;
+    for i = 1:maxVel
     
         s = rng(i);
         m_v = (1 + randi([-5,5])*0.01)*2500;
@@ -68,12 +68,12 @@ function [inputParams,responseData,stepResponse,maxVel] = generateResponseVel(ma
     stepResponse = merge(modelStepResponse{:});
     simOut = parsim(in, 'ShowSimulationManager', 'off', 'TransferBaseWorkspaceVariables','on');
 
-    for i = 1:numRuns
+    for i = 1:maxVel
         disp(simOut(i).ErrorMessage)
     end
     %Create iddata objects from the simulation output objects to load into the
     %System Identification Toolbox
-    for itr = 1:numRuns
+    for itr = 1:maxVel
         
         responseData{itr} = iddata([squeeze(simOut(itr).veh_y.data)  ...
             squeeze(simOut(itr).veh_vel.data)  ...
