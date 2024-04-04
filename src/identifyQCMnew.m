@@ -1,4 +1,4 @@
-function [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(est_data)
+function [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCMnew(est_data,samplingTime)
 
     timeCost = zeros(6,1);
     %Estimate using the Transfer Function Model. Time the estimation
@@ -19,7 +19,7 @@ function [sys_ss,sys_n,sys_tf,sys_arx,sys_OE,sys_BJ,timeCost] = identifyQCM(est_
     Options_ss.Focus = 'simulation';
 
     ss_time = tic();
-    sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',0.05, Options_ss);
+    sys_ss = ssest(est_data, 4, 'Form', 'free','Ts',samplingTime, Options_ss);
     timeCost(3) = toc(ss_time);
     
      %Estimate using the Linear ARX Model. Time the estimation
