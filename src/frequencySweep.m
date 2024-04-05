@@ -3,7 +3,7 @@ close all;
 
 % For sampling time ranging from 0.01s to 0.9s at 0.01 intervals
 
-samplingTime = 0.01:0.01:0.99;
+samplingTime = 0.01:0.01:0.06;
 
 sweepSize = length(samplingTime);
 sbResponse = {};
@@ -45,17 +45,17 @@ end
 
 outputList = ["Vehicle Displacement","Vehicle Velocity","Suspension Displacement","Suspension Velocity"];
 t = figure;
-plot(samplingTime(1:simSize),computeCost(1,:));
+plot(samplingTime(1:sweepSize),computeCost(1,:));
 xlabel("Sampling Time(s)");
 ylabel("Computational Time Cost(s)");
 hold on;
-plot(samplingTime(1:simSize),computeCost(2,:));
-plot(samplingTime(1:simSize),computeCost(3,:));
-plot(samplingTime(1:simSize),computeCost(4,:));
-plot(samplingTime(1:simSize),computeCost(5,:));
-plot(samplingTime(1:simSize),computeCost(6,:));
-%legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
-legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
+plot(samplingTime(1:sweepSize),computeCost(2,:));
+plot(samplingTime(1:sweepSize),computeCost(3,:));
+%plot(samplingTime(1:sweepSize),computeCost(4,:));
+plot(samplingTime(1:sweepSize),computeCost(5,:));
+plot(samplingTime(1:sweepSize),computeCost(6,:));
+legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
+%legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
 
 hold off;
 exportgraphics(t,"TimeCostPlotFreq.png")
@@ -63,18 +63,18 @@ fit = figure;
 for j = 1:4
 
     subplot(2,2,j);
-    plot(samplingTime(1:simSize), fit_sb_array(:,j,1));
+    plot(samplingTime(1:sweepSize), fit_sb_array(:,j,1));
     title(outputList(j));
     xlabel("SamplingTime(s)");
     ylabel("Percent Fit");
     hold on;
-    plot(samplingTime(1:simSize), fit_sb_array(:,j,2));
-    plot(samplingTime(1:simSize), fit_sb_array(:,j,3));
-    plot(samplingTime(1:simSize), fit_sb_array(:,j,4));
-    plot(samplingTime(1:simSize), fit_sb_array(:,j,5));
-    plot(samplingTime(1:simSize), fit_sb_array(:,j,6));
-    legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
-    %legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
+    plot(samplingTime(1:sweepSize), fit_sb_array(:,j,2));
+    plot(samplingTime(1:sweepSize), fit_sb_array(:,j,3));
+    %plot(samplingTime(1:sweepSize), fit_sb_array(:,j,4));
+    plot(samplingTime(1:sweepSize), fit_sb_array(:,j,5));
+    plot(samplingTime(1:sweepSize), fit_sb_array(:,j,6));
+    %legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
+    legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
     hold off;
 end
 
@@ -85,18 +85,18 @@ step_fit = figure;
 for itr = 1:4
 
     subplot(2,2,itr);
-    plot(samplingTime(1:simSize), fit_step_array(:,itr,1));
+    plot(samplingTime(1:sweepSize), fit_step_array(:,itr,1));
     title(outputList(itr));
     xlabel("Sampling Time(s)");
     ylabel("Percent Fit");
     hold on;
-    plot(samplingTime(1:simSize), fit_step_array(:,itr,2));
-    plot(samplingTime(1:simSize), fit_step_array(:,itr,3));
-    plot(samplingTime(1:simSize), fit_step_array(:,itr,4));
-    plot(samplingTime(1:simSize), fit_step_array(:,itr,5));
-    plot(samplingTime(1:simSize), fit_step_array(:,itr,6));
-    legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
-    %legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
+    plot(samplingTime(1:sweepSize), fit_step_array(:,itr,2));
+    plot(samplingTime(1:sweepSize), fit_step_array(:,itr,3));
+    plot(samplingTime(1:sweepSize), fit_step_array(:,itr,4));
+    %plot(samplingTime(1:sweepSize), fit_step_array(:,itr,5));
+    plot(samplingTime(1:sweepSize), fit_step_array(:,itr,6));
+    %legend("State Space Model", "N4SID Model","Transfer Function Model","Linear ARX Model","Output Error(OE) Model","Box Jenkins Model");
+    legend("State Space Model", "N4SID Model","Transfer Function Model","Output Error(OE) Model","Box Jenkins Model");
     hold off;
 end
 
