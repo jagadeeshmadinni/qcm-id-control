@@ -1,0 +1,77 @@
+%Defin the velocity range with which to excite the road profile input
+velRange = 1:100;
+numVel = length(velRange);
+
+%Sampling time intervals, in other words frequency of data collection
+sampTimeRange = 0.01:0.01:0.06;
+numSampTimes = length(sampTimeRange);
+
+%Number of experiments per each combination of parameters
+numExpPerInput = 50;
+
+% Fraction of the experiments to be used for estimation
+estSplit = 0.7;
+
+%Estimation models for chosen for linear system identification
+models = {'ss_est','n4sid','tf_est','arx','output_error','box_jenkins'};
+numModels = length(models);
+
+%Characterize the system with input - output channels. The QCM is a Single
+%Input Multiple Output system
+numOutputs = 4;
+
+%Preallocate matrices to store the model fit and computational cost results
+%across parameter sweeps
+%%%%%%%%%%%% Results are stored as below %%%%%%%%%
+% ------------------------------------------------------------------- % 
+% velocity -> sampling time -> Focus - > Model Name - >Output Channel %
+% ------------------------------------------------------------------- %
+avgFitArraySB = zeros(numSampTimes,numVel,2,numModels,numOutputs);
+avgFitArrayStep = zeros(numSampTimes,numVel,2,numModels,numOutputs);
+timeCostArray = zeros(numSampTimes,numVel,2,numModels);
+
+for sampIter = 1:numSampTimes
+    
+    for velIter = 1:numVel
+        
+        [inputParams,sbResponseData,stepResponseData] = generateResponse(velRange(velIter),sampTimeRange(sampIter),numExpPerInput);
+        estSize = floor(numExpPerInput*estSplit);
+        est_data = merge(sbResponseData{1:estSize});
+        val_data = merge(sbResponseData{estSize+1:numExpPerInput});
+
+        %Identify system and compare model fit with simulation focus
+        [sys_ss_sim,sys_n_sim,sys_tf_sim,sys_arx_sim,sys_OE_sim,sys_BJ_sim,timeCost_sim] = identifySystem(est_data,sampTimeRange(sampIter),0); %Simulation Focus
+        timeCostArray(sampIter,velIter,1,:) = timeCost_sim;
+        %Compare model responses with validation data in each case
+        [ymod_sb_sim,fit_sb_sim,ic_sb_sim] = compare(val_data,sys_ss_sim,sys_n_sim,sys_tf_sim,sys_arx_sim,sys_OE_sim,sys_BJ_sim);
+        avg_fit_sb_sim = reshape(mean(cell2mat(fit_sb_sim),2),[4,6]);   
+        avgFitArraySB(sampIter,velIter,1,:,:) = avg_fit_sb_sim';
+        
+        %Compare step responses of estimated models with known step response data
+        step_val_data = getexp(stepResponseData,estSize+1:numExpPerInput);
+        [ymod_step_sim,fit_step_sim,ic_step_sim] = compare(step_val_data,sys_ss_sim,sys_n_sim,sys_tf_sim,sys_arx_sim,sys_OE_sim,sys_BJ_sim);
+        avg_fit_step_sim = reshape(mean(cell2mat(fit_step_sim),2),[4,6]);   
+        avgFitArrayStep(sampIter,velIter,1,:,:) = avg_fit_step_sim';
+
+        
+        % Repeat identification and comparision with prediction mode
+        [sys_ss_pred,sys_n_pred,sys_tf_pred,sys_arx_pred,sys_OE_pred,sys_BJ_pred,timeCost_pred] = identifySystem(est_data,sampTimeRange(sampIter),1); %Prediction Focus
+        timeCostArray(sampIter,velIter,2,:) = timeCost_pred;
+        %Compare model responses with validation data in each case
+        [ymod_sb_pred,fit_sb_pred,ic_sb_pred] = compare(val_data,sys_ss_pred,sys_n_pred,sys_tf_pred,sys_arx_pred,sys_OE_pred,sys_BJ_pred);
+        avg_fit_sb_pred = reshape(mean(cell2mat(fit_sb_pred),2),[4,6]);   
+        avgFitArraySB(sampIter,velIter,2,:,:) = avg_fit_sb_pred';
+        
+        %Compare step responses of estimated models with known step response data
+        
+        [ymod_step_pred,fit_step_pred,ic_step_pred] = compare(step_val_data,sys_ss_pred,sys_n_pred,sys_tf_pred,sys_arx_pred,sys_OE_pred,sys_BJ_pred);
+        avg_fit_step_pred = reshape(mean(cell2mat(fit_step_pred),2),[4,6]);   
+        avgFitArrayStep(sampIter,velIter,2,:,:) = avg_fit_step_pred';
+
+    
+    end 
+
+end
+
+save("qcmVariables.mat");
+
